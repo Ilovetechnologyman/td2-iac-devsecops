@@ -11,7 +11,7 @@ db:
   host: postgres.td2.svc.cluster.local
   port: 5432
   user: app
-  password: changeme
+  password: CHANGE_ME
   name: appdb
 
 resources:

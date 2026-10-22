@@ -4,7 +4,7 @@ image:
 
 auth:
   username: app
-  password: changeme
+  password: CHANGE_ME
   database: appdb
 
 storage:

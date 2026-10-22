@@ -5,5 +5,5 @@ chpasswd:
   expire: false
   users:
     - name: ubuntu
-      password: azerty
+      password: CHANGE_ME
       type: text
