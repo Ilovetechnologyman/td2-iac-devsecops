@@ -1,0 +1,191 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-html
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="fr">
+    <head>
+      <meta charset="UTF-8">
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+      >
+      <title>NovaShop</title>
+
+      <style>
+        body {
+          margin: 0;
+          padding: 40px;
+          color: #1f2937;
+          background: #f3f4f6;
+          font-family: Arial, sans-serif;
+        }
+
+        main {
+          max-width: 900px;
+          margin: auto;
+        }
+
+        h1 {
+          margin-bottom: 4px;
+        }
+
+        .subtitle {
+          color: #6b7280;
+        }
+
+        .status {
+          display: inline-block;
+          margin: 16px 0;
+          padding: 8px 12px;
+          color: #166534;
+          background: #dcfce7;
+          border-radius: 20px;
+        }
+
+        .cards {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+          margin: 24px 0;
+        }
+
+        .card {
+          padding: 18px;
+          background: white;
+          border-radius: 10px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card strong {
+          display: block;
+          margin-bottom: 8px;
+        }
+
+        table {
+          width: 100%;
+          overflow: hidden;
+          background: white;
+          border-collapse: collapse;
+          border-radius: 10px;
+        }
+
+        th,
+        td {
+          padding: 12px;
+          text-align: left;
+          border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+          background: #111827;
+          color: white;
+        }
+
+        .footer {
+          margin-top: 16px;
+          color: #6b7280;
+          font-size: 14px;
+        }
+      </style>
+    </head>
+
+    <body>
+      <main>
+        <h1>NovaShop</h1>
+
+        <div class="subtitle">
+          Application 3-tiers - TD2 IaC / DevSecOps
+        </div>
+
+        <div id="status" class="status">
+          Chargement...
+        </div>
+
+        <section class="cards">
+          <div class="card">
+            <strong>Pod frontend</strong>
+            <span id="frontend-pod">-</span>
+          </div>
+
+          <div class="card">
+            <strong>Pod backend</strong>
+            <span id="backend-pod">-</span>
+          </div>
+
+          <div class="card">
+            <strong>Base de données</strong>
+            <span>PostgreSQL 16</span>
+          </div>
+        </section>
+
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Nom de l'article</th>
+            </tr>
+          </thead>
+
+          <tbody id="items">
+            <tr>
+              <td colspan="2">Chargement...</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="footer">
+          Rafraîchissement automatique toutes les 5 secondes
+        </div>
+      </main>
+
+      <script>
+        async function refresh() {
+          const status = document.getElementById("status");
+
+          try {
+            const frontendResponse = await fetch(
+              "/",
+              { cache: "no-store" }
+            );
+
+            document.getElementById("frontend-pod").textContent =
+              frontendResponse.headers.get("X-Pod-Name") || "inconnu";
+
+            const backendResponse = await fetch(
+              "/api/items",
+              { cache: "no-store" }
+            );
+
+            if (!backendResponse.ok) {
+              throw new Error(
+                `HTTP ${backendResponse.status}`
+              );
+            }
+
+            const data = await backendResponse.json();
+
+            document.getElementById("backend-pod").textContent =
+              data.pod || "inconnu";
+
+            document.getElementById("items").innerHTML =
+              data.items.map((item) => `
+                <tr>
+                  <td>${item.id}</td>
+                  <td>${item.name}</td>
+                </tr>
+              `).join("");
+
+            status.textContent = "● En ligne";
+          } catch (error) {
+            status.textContent = `● Erreur : ${error.message}`;
+          }
+        }
+
+        refresh();
+        setInterval(refresh, 5000);
+      </script>
+    </body>
+    </html>
